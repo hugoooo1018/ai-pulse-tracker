@@ -121,40 +121,55 @@ export async function fetchRSS(url: string, source: string): Promise<AIArticle[]
  */
 export async function processArticles() {
   try {
-    // 并行获取所有数据源
-    const [hackerNews, techCrunch, mitTechReview, wired, arsTechnica, ventureBeat, aiBusiness, mlMastery, openAI, anthropic, bestBlogs] = await Promise.all([
-      fetchHackerNews(),
-      fetchRSS(DATA_SOURCES[1].url, DATA_SOURCES[1].name),
-      fetchRSS(DATA_SOURCES[2].url, DATA_SOURCES[2].name),
-      fetchRSS(DATA_SOURCES[3].url, DATA_SOURCES[3].name),
-      fetchRSS(DATA_SOURCES[4].url, DATA_SOURCES[4].name),
-      fetchRSS(DATA_SOURCES[5].url, DATA_SOURCES[5].name),
-      fetchRSS(DATA_SOURCES[6].url, DATA_SOURCES[6].name),
-      fetchRSS(DATA_SOURCES[7].url, DATA_SOURCES[7].name),
-      fetchRSS(DATA_SOURCES[8].url, DATA_SOURCES[8].name),
-      fetchRSS(DATA_SOURCES[9].url, DATA_SOURCES[9].name),
-      fetchRSS(DATA_SOURCES[10].url, DATA_SOURCES[10].name)
-    ])
+    // 顺序获取数据源，避免并行请求过多导致超时
+    let allArticles: AIArticle[] = []
+    
+    // 先获取Hacker News
+    const hackerNews = await fetchHackerNews()
+    allArticles = [...allArticles, ...hackerNews]
+    
+    // 顺序获取RSS源
+    for (let i = 1; i < DATA_SOURCES.length; i++) {
+      const source = DATA_SOURCES[i]
+      if (source.type === 'rss') {
+        try {
+          const rssArticles = await fetchRSS(source.url, source.name)
+          allArticles = [...allArticles, ...rssArticles]
+          // 短暂延迟，避免请求过于频繁
+          await new Promise(resolve => setTimeout(resolve, 100))
+        } catch (error) {
+          console.error(`Error fetching ${source.name}:`, error)
+          // 继续处理下一个源，不中断整个过程
+        }
+      }
+    }
     
     // 合并所有文章
-    let newArticles = [...hackerNews, ...techCrunch, ...mitTechReview, ...wired, ...arsTechnica, ...ventureBeat, ...aiBusiness, ...mlMastery, ...openAI, ...anthropic, ...bestBlogs]
+    let newArticles = allArticles
     
     // 去重
     const uniqueNewArticles = Array.from(
       new Map(newArticles.map(article => [article.url, article])).values()
     )
     
-    // 分析每篇文章
-    const analyzedArticles = await processInBatches(uniqueNewArticles, 5, async (article) => {
-      const analysis = await analyzeArticle(article)
-      const finalScore = calculateFinalScore(analysis.qualityScore, article.sourceScore)
-      
-      return {
-        ...article,
-        category: analysis.category,
-        aiSummary: analysis.aiSummary,
-        qualityScore: analysis.qualityScore,
-        finalScore: finalScore
+    // 分析每篇文章（限制处理数量，避免超时）
+    const articlesToProcess = uniqueNewArticles.slice(0, 50) // 限制处理50篇文章
+    const analyzedArticles = await processInBatches(articlesToProcess, 3, async (article) => {
+      try {
+        const analysis = await analyzeArticle(article)
+        const finalScore = calculateFinalScore(analysis.qualityScore, article.sourceScore)
+        
+        return {
+          ...article,
+          category: analysis.category,
+          aiSummary: analysis.aiSummary,
+          qualityScore: analysis.qualityScore,
+          finalScore: finalScore
+        }
+      } catch (error) {
+        console.error(`Error analyzing article ${article.title}:`, error)
+        // 返回原始文章，不中断处理
+        return article
       }
     })
     
