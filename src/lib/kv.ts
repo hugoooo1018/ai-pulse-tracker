@@ -90,7 +90,10 @@ const isRedisConfigured = process.env.REDIS_URL && process.env.REDIS_URL !== 'yo
 
 // 创建 Redis 客户端
 const kv = isRedisConfigured 
-  ? new Redis(process.env.REDIS_URL || '')
+  ? new Redis({
+      url: process.env.REDIS_URL || '',
+      token: 'default', // 使用默认token，因为URL中已经包含了认证信息
+    })
   : new MemoryKV()
 
 export default kv
