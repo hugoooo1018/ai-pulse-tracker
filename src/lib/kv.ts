@@ -1,5 +1,13 @@
 import { Redis } from '@upstash/redis'
 
+// 为 globalThis 添加类型声明
+declare global {
+  var __AI_PULSE_TRACKER_STORAGE: {
+    data: Map<string, any>
+    sortedSets: Map<string, Map<string, number>>
+  }
+}
+
 // 全局内存存储，用于本地开发
 // 使用 globalThis 确保在不同模块和请求之间保持数据一致性
 if (!globalThis.__AI_PULSE_TRACKER_STORAGE) {
