@@ -1,5 +1,3 @@
-import { Redis } from '@upstash/redis'
-
 // 为 globalThis 添加类型声明
 declare global {
   var __AI_PULSE_TRACKER_STORAGE: {
@@ -8,7 +6,7 @@ declare global {
   }
 }
 
-// 全局内存存储，用于本地开发
+// 全局内存存储，用于本地开发和生产环境
 // 使用 globalThis 确保在不同模块和请求之间保持数据一致性
 if (!globalThis.__AI_PULSE_TRACKER_STORAGE) {
   globalThis.__AI_PULSE_TRACKER_STORAGE = {
@@ -17,7 +15,7 @@ if (!globalThis.__AI_PULSE_TRACKER_STORAGE) {
   }
 }
 
-// 内存存储，用于本地开发
+// 内存存储，用于所有环境
 class MemoryKV {
   private storage = globalThis.__AI_PULSE_TRACKER_STORAGE
 
@@ -85,15 +83,7 @@ class MemoryKV {
   }
 }
 
-// 检查是否在生产环境或有 Redis 配置
-const isRedisConfigured = process.env.REDIS_URL && process.env.REDIS_URL !== 'your_redis_url'
-
-// 创建 Redis 客户端
-const kv = isRedisConfigured 
-  ? new Redis({
-      url: process.env.REDIS_URL || '',
-      token: 'default', // 使用默认token，因为URL中已经包含了认证信息
-    })
-  : new MemoryKV()
+// 直接使用内存存储，避免Redis连接问题
+const kv = new MemoryKV()
 
 export default kv
