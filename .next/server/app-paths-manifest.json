@@ -1,0 +1,4 @@
+{
+  "/api/manual-refresh/route": "app/api/manual-refresh/route.js",
+  "/page": "app/page.js"
+}

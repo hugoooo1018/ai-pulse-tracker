@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 引入字体 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap');
+
+@layer base {
+  :root {
+    --background: #F5F2EB;
+    --card-bg: #E8E4DC;
+    --text-primary: #1A1A1A;
+    --text-secondary: #666666;
+    --button-bg: #1A1A1A;
+    --button-text: #FFFFFF;
+  }
+
+  body {
+    @apply bg-[var(--background)] text-[var(--text-primary)];
+    font-family: 'Times New Roman', 'Noto Serif SC', serif;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-[var(--card-bg)] rounded-xl p-6 transition-shadow hover:shadow-md;
+  }
+  
+  .btn {
+    @apply bg-[var(--button-bg)] text-[var(--button-text)] px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 transition-opacity;
+  }
+  
+  .nav-link {
+    @apply px-4 py-2 hover:text-[var(--text-secondary)] transition-colors;
+  }
+  
+  .category-tag {
+    @apply text-sm font-medium text-[var(--text-secondary)];
+  }
+  
+  .date-tag {
+    @apply text-sm text-[var(--text-secondary)];
+  }
+}
+
