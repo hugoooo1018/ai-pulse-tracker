@@ -1,4 +1,4 @@
-import { createClient } from '@vercel/kv'
+import { Redis } from '@upstash/redis'
 
 // 全局内存存储，用于本地开发
 // 使用 globalThis 确保在不同模块和请求之间保持数据一致性
@@ -77,14 +77,14 @@ class MemoryKV {
   }
 }
 
-// 检查是否在生产环境或有 KV 配置
-const isKVConfigured = process.env.KV_URL && process.env.KV_REST_API_TOKEN && process.env.KV_URL !== 'your_kv_url' && process.env.KV_REST_API_TOKEN !== 'your_kv_token'
+// 检查是否在生产环境或有 Redis 配置
+const isRedisConfigured = process.env.UPSTASH_REDIS_URL && process.env.UPSTASH_REDIS_TOKEN && process.env.UPSTASH_REDIS_URL !== 'your_upstash_redis_url' && process.env.UPSTASH_REDIS_TOKEN !== 'your_upstash_redis_token'
 
-// 创建 KV 客户端
-const kv = isKVConfigured 
-  ? createClient({
-      url: process.env.KV_URL || '',
-      token: process.env.KV_REST_API_TOKEN || '',
+// 创建 Redis 客户端
+const kv = isRedisConfigured 
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_URL || '',
+      token: process.env.UPSTASH_REDIS_TOKEN || '',
     })
   : new MemoryKV()
 
