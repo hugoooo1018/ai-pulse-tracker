@@ -86,13 +86,12 @@ class MemoryKV {
 }
 
 // 检查是否在生产环境或有 Redis 配置
-const isRedisConfigured = process.env.UPSTASH_REDIS_URL && process.env.UPSTASH_REDIS_TOKEN && process.env.UPSTASH_REDIS_URL !== 'your_upstash_redis_url' && process.env.UPSTASH_REDIS_TOKEN !== 'your_upstash_redis_token'
+const isRedisConfigured = process.env.REDIS_URL && process.env.REDIS_URL !== 'your_redis_url'
 
 // 创建 Redis 客户端
 const kv = isRedisConfigured 
   ? new Redis({
-      url: process.env.UPSTASH_REDIS_URL || '',
-      token: process.env.UPSTASH_REDIS_TOKEN || '',
+      url: process.env.REDIS_URL || '',
     })
   : new MemoryKV()
 
