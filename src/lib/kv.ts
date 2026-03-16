@@ -90,9 +90,7 @@ const isRedisConfigured = process.env.REDIS_URL && process.env.REDIS_URL !== 'yo
 
 // 创建 Redis 客户端
 const kv = isRedisConfigured 
-  ? new Redis({
-      url: process.env.REDIS_URL || '',
-    })
+  ? new Redis(process.env.REDIS_URL || '')
   : new MemoryKV()
 
 export default kv
